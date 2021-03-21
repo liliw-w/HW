@@ -10,3 +10,7 @@ Print answers to the following
 7. What is something you would like to learn in this course?
 8. Do you have any questions or concerns you would like to share?
 """
+name = 'liliw-w'
+year = 2020
+
+print(f'1. Your name: {name}.', f'2. Your program / {year}.', sep='\n')

@@ -10,13 +10,6 @@ class AbstractFunction:
     An abstract function class
     """
 
-    def derivative(self):
-        """
-        returns another function f' which is the derivative of x
-        """
-        raise NotImplementedError("derivative")
-
-
     def __str__(self):
         return "AbstractFunction"
 
@@ -32,6 +25,14 @@ class AbstractFunction:
         assumes x is a numeric value, or numpy array of values
         """
         raise NotImplementedError("evaluate")
+
+
+    def derivative(self):
+        """
+        returns another function f' which is the derivative of x
+        """
+        raise NotImplementedError("derivative")
+
 
 
     def __call__(self, x):
@@ -82,7 +83,10 @@ class AbstractFunction:
         plots function on values
         pass kwargs to plotting function
         """
-        raise NotImplementedError("plot")
+        plt.plot(vals, self.evaluate(vals), **kwargs)
+        plt.show()
+
+        #raise NotImplementedError("plot")
 
 
 class Polynomial(AbstractFunction):
@@ -207,3 +211,201 @@ class Affine(Polynomial):
     """
     def __init__(self, a, b):
         super().__init__(a, b)
+
+
+class Scale(Polynomial):
+    def __init__(self, a):
+        super().__init__(a, 0)
+
+
+class Constant(Polynomial):
+    def __init__(self, c):
+        super().__init__(c)
+
+
+class Compose(AbstractFunction):
+    def __init__(self, f, g):
+        self.f = f
+        self.g = g
+
+    def __str__(self):
+        # From Answer: return "{}".format(self.f).format(self.g)
+        return self.f.__str__().format(self.g.__str__())
+
+    def __repr__(self):
+        # From Answer: return "Compose({}, {})".format(self.f.__repr__(), self.g.__repr__())
+        return "Compose({f}, {g})".format(f = self.f.__repr__(), g = self.g.__repr__())
+
+    def evaluate(self, x):
+        # From Answer: return self.f(self.g(x))
+        return self.f.evaluate( self.g.evaluate(x) )
+
+    def derivative(self):
+        return self.f.derivative()(self.g) * self.g.derivative()
+
+
+class Product(AbstractFunction):
+    def __init__(self, f, g):
+        self.f = f
+        self.g = g
+
+    def __str__(self):
+        # From Answer: return "({}) * ({})".format(self.f, self.g)
+        return "(" + self.f.__str__() + ") * (" + self.g.__str__() + ")"
+
+    def __repr__(self):
+        return "Product({f}, {g})".format(f = self.f.__repr__(), g = self.g.__repr__())
+
+    def evaluate(self, x):
+        return self.f.evaluate(x) * self.g.evaluate(x)
+
+    def derivative(self):
+        return self.f.derivative()*self.g + self.f*self.g.derivative()
+
+
+class Sum(AbstractFunction):
+    def __init__(self, f, g):
+        self.f = f
+        self.g = g
+
+    def __str__(self):
+        # From Answer: return "{} + {}".format(self.f, self.g)
+        return self.f.__str__() + " + " + self.g.__str__()
+
+    def __repr__(self):
+        return "Sum({f}, {g})".format(f = self.f.__repr__(), g = self.g.__repr__())
+
+    def evaluate(self, x):
+        # From Answer: return self.f(x) + self.g(x)
+        return self.f.evaluate(x) + self.g.evaluate(x)
+
+    def derivative(self):
+        # From Answer: return Sum(self.f.derivative(), self.g.derivative())
+        return self.f.derivative() + self.g.derivative()
+
+
+class Power(AbstractFunction):
+    def __init__(self, n):
+        self.power = n
+
+    def __repr__(self):
+        return "Power({})".format(self.power)
+
+    def __str__(self):
+        if self.power == 1:
+            return "{0}"
+        return "({{0}})^{}".format(self.power)
+
+    def evaluate(self, x):
+        return np.power(x, self.power)
+
+    def derivative(self):
+        # Use compose class
+        return Scale(self.power)( Power(self.power-1) )
+
+        #if self.power == 0:
+        #    return 0
+        # return Polynomial(*( np.insert(np.zeros(self.power-1), 0, self.power) ))
+
+class Log(AbstractFunction):
+    def __init__(self):
+        pass
+
+    def __repr__(self):
+        return "Log()"
+
+    def __str__(self):
+        return "Log({0})"
+
+    def evaluate(self, x):
+        x = np.array(x)
+        if np.all(x>0):
+            return np.log(x)
+        else:
+            raise Exception("Log() only function on positive numbers!")
+
+    def derivative(self):
+        return Power(-1)
+
+
+class Exponential(AbstractFunction):
+    def __init__(self):
+        pass
+
+    def __repr__(self):
+        return "Exponential()"
+
+    def __str__(self):
+        return "exp({0})"
+
+    def evaluate(self, x):
+        return np.exp(x)
+
+    def derivative(self):
+        return Exponential()
+
+
+class Sin(AbstractFunction):
+    def __init__(self, coef = 1):
+        self.coef = coef
+
+    def __repr__(self):
+        if self.coef == 1:
+            return "Sin()"
+        return "{}Sin()".format(self.coef)
+
+    def __str__(self):
+        if self.coef == 1:
+            return "Sin({0})"
+        return "{}Sin({{0}})".format(self.coef)
+
+    def evaluate(self, x):
+        return np.sin(x) * self.coef
+
+    def derivative(self):
+        return Cos(self.coef)
+
+
+class Cos(AbstractFunction):
+    def __init__(self, coef = 1):
+        self.coef = coef
+
+    def __repr__(self):
+        if self.coef == 1:
+            return "Cos()"
+        return "{}Cos()".format(self.coef)
+
+    def __str__(self):
+        if self.coef == 1:
+            return "Cos({0})"
+        return "{}Cos({{0}})".format(self.coef)
+
+    def evaluate(self, x):
+        return np.cos(x) * self.coef
+
+    def derivative(self):
+        # From Answer: return Constant(-1) * Sin() (In this way, no need to use self.coef)
+        return Sin(-1 * self.coef)
+
+
+class Symbolic(AbstractFunction):
+    def __init__(self, f):
+        self.f = f
+
+    def __repr__(self):
+        return "Symbolic()"
+
+    def __str__(self):
+        return "{}({{0}})".format(self.f)
+
+    def evaluate(self, x):
+        # return super().__call__(str(x))
+        return self.__str__().format(x)
+
+    def derivative(self):
+        return Symbolic(self.f + '\'')
+
+
+if __name__ == '__main__':
+    p = Polynomial(5,3,1)
+    p.plot(color='red')

@@ -6,11 +6,12 @@ functions to compute fibonacci numbers
 Complete problems 2 and 3 in this file.
 """
 
-import time # to compute runtimes
-from tqdm import tqdm # progress bar
+import time  # to compute runtimes
+from tqdm import tqdm  # progress bar
 from egyptian import isodd
 import numpy as np
 import matplotlib.pyplot as plt
+
 
 # Question 2
 def fibonacci_recursive(n):
@@ -19,7 +20,7 @@ def fibonacci_recursive(n):
     if n == 1:
         return 1
 
-    res = fibonacci_recursive(n-1)+fibonacci_recursive(n-2)
+    res = fibonacci_recursive(n - 1) + fibonacci_recursive(n - 2)
 
     return res
 
@@ -30,8 +31,8 @@ def fibonacci_iter(n):
         return 0
     a = 0
     b = 1
-    for i in range(n-1):
-        a, b = b, a+b
+    for i in range(n - 1):
+        a, b = b, a + b
     return b
 
 
@@ -61,9 +62,8 @@ def fibonacci_power(n, dtype=None):
         else:
             return power(A @ A, n // 2)
 
-
     A = np.array([1, 1, 1, 0], dtype=dtype).reshape(2, 2)
-    Fn = power(A, n-1) @ np.array([1, 0], dtype=dtype).reshape(2, 1)
+    Fn = power(A, n - 1) @ np.array([1, 0], dtype=dtype).reshape(2, 1)
 
     return int(Fn[0])
 
@@ -72,22 +72,22 @@ if __name__ == '__main__':
     this section of the code only executes when
     this file is run as a script.
     """
-    print("The first 30 Fibonacci numbers by fibonacci_recursive:", end = '\n')
+    print("The first 30 Fibonacci numbers by fibonacci_recursive:", end='\n')
     print([fibonacci_recursive(n) for n in range(30)])
-    print("The first 30 Fibonacci numbers by fibonacci_iter:", end = '\n')
+    print("The first 30 Fibonacci numbers by fibonacci_iter:", end='\n')
     print([fibonacci_iter(n) for n in range(30)])
-    print("The first 30 Fibonacci numbers by fibonacci_power:", end = '\n')
+    print("The first 30 Fibonacci numbers by fibonacci_power:", end='\n')
     print([fibonacci_power(n) for n in range(30)])
 
     try:
         print("Use np.float64")
-        print(fibonacci_power(10**13, dtype=np.float64))
+        print(fibonacci_power(10 ** 13, dtype=np.float64))
     except ValueError as e:
         print(e)
 
     try:
-        print("Use np.int64", end = '\n')
-        print(fibonacci_power(10**13, dtype=np.int64))
+        print("Use np.int64", end='\n')
+        print(fibonacci_power(10 ** 13, dtype=np.int64))
     except ValueError as e:
         print(e)
 

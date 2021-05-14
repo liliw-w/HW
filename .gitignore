@@ -1,7 +1,5 @@
 # temporary files
-test*
 tmp*
-try*
 
 # Emacs
 *~

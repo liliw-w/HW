@@ -34,7 +34,6 @@ class AbstractFunction:
         raise NotImplementedError("derivative")
 
 
-
     def __call__(self, x):
         """
         if x is another AbstractFunction, return the composition of functions
@@ -84,9 +83,23 @@ class AbstractFunction:
         pass kwargs to plotting function
         """
         plt.plot(vals, self.evaluate(vals), **kwargs)
-        plt.show()
+        #plt.show()
 
         #raise NotImplementedError("plot")
+
+
+    def taylor_series(self, x0, deg=5):
+        """
+        Returns the Taylor series of f centered at x0 truncated to degree k.
+        """
+        s = Constant(self.evaluate(x0))
+
+        if deg < 1:
+            return s
+        for i in np.arange(1, deg+1):
+            self = (Constant(1/i) * self).derivative()
+            s = s + Constant(self.evaluate(x0)) * Power(i)( Polynomial(1, -1*x0) )
+        return s
 
 
 class Polynomial(AbstractFunction):
@@ -406,6 +419,39 @@ class Symbolic(AbstractFunction):
         return Symbolic(self.f + '\'')
 
 
+def newton_root(f, x0, tol=1e-8):
+    """
+    find a point x so that f(x) is close to 0,
+    measured by abs(f(x)) < tol
+
+    Use Newton's method starting at point x0
+    """
+    if not(isinstance(f, AbstractFunction)) or isinstance(f, Symbolic):
+        raise Exception("Function f should be an AbstractFunction but not Symbolic!")
+
+    eps = 10
+    while eps > tol:
+        x1 = x0 - f(x0)/f.derivative()(x0)
+        x0 = x1
+        eps = abs(f(x0))
+
+    return x0
+
+
+def newton_extremum(f, x0, tol=1e-8):
+    """
+    find a point x which is close to a local maximum or minimum of f,
+    measured by abs(f'(x)) < tol
+
+    Use Newton's method starting at point x0
+    """
+    if not(isinstance(f, AbstractFunction)) or isinstance(f, Symbolic):
+        raise Exception("Function f should be an AbstractFunction but not Symbolic!")
+
+    return newton_root(f.derivative(), x0=x0, tol=tol)
+
+
 if __name__ == '__main__':
     p = Polynomial(5,3,1)
     p.plot(color='red')
+

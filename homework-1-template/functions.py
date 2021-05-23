@@ -92,6 +92,11 @@ class AbstractFunction:
         """
         Returns the Taylor series of f centered at x0 truncated to degree k.
         """
+
+        # From solution: 1. Assign derivation to another name instead of self.
+        # 2. Polynomial(1, -1*x0) is implemented as Affine(1, -x0)
+        # 3. factorial is assigned to another names, instead of being included into self
+
         s = Constant(self.evaluate(x0))
 
         if deg < 1:
@@ -409,6 +414,7 @@ class Symbolic(AbstractFunction):
         return "Symbolic()"
 
     def __str__(self):
+        # From solution: return self.f + "({0})"
         return "{}({{0}})".format(self.f)
 
     def evaluate(self, x):
@@ -430,12 +436,13 @@ def newton_root(f, x0, tol=1e-8):
         raise Exception("Function f should be an AbstractFunction but not Symbolic!")
 
     eps = 10
+    x = x0
+    f1 = f.derivative()
     while eps > tol:
-        x1 = x0 - f(x0)/f.derivative()(x0)
-        x0 = x1
-        eps = abs(f(x0))
+        x = x - f(x)/f1(x)
+        eps = abs(f(x))
 
-    return x0
+    return x
 
 
 def newton_extremum(f, x0, tol=1e-8):
